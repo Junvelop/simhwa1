@@ -1,8 +1,11 @@
 package com.example.myapplication;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,10 +36,33 @@ public class Dist extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new RecyclerAdapter();
+        adapter = new RecyclerAdapter(this);
         recyclerView.setAdapter(adapter);
 
         fetchDataFromAPI();
+
+        Button backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setContentView(R.layout.mainlayout);
+            }
+
+            public void onItemClick(String itemName, String itemDescription) {
+                Intent intent = new Intent(Dist.this, DrugInfoActivity.class);
+                intent.putExtra("itemName", itemName);
+                intent.putExtra("itemDescription", itemDescription);
+                startActivity(intent);
+            }
+
+
+        });
+
+
+
+
+
+
     }
 
     private void fetchDataFromAPI() {

@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,14 +17,31 @@ import java.util.ArrayList;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
+
+    private Dist mActivity;
+
+    public RecyclerAdapter(Dist activity) {
+        mActivity = activity;
+    }
+
     private ArrayList<Data> mData = new ArrayList<>();
+    private OnItemClickListener mListener;
+
+    public interface OnItemClickListener {
+        void onItemClick(String itemName);
+
+        void onItemClick(String itemName, String itemDescription);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mListener = listener;
+    }
 
     public void addItem(Data item) {
         mData.add(item);
         notifyDataSetChanged(); // 데이터 변경을 어댑터에 알림
     }
 
-    // 아이템 뷰를 저장하는 ViewHolder 클래스
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView textView1;     // 영화이름
@@ -48,10 +66,15 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             Glide.with(itemView.getContext())
                     .load(data.getItemImage())
                     .into(imageView);
+
+            itemView.setOnClickListener(v -> {
+                if (mListener != null) {
+                    mListener.onItemClick(data.getItemName());
+                }
+            });
         }
     }
 
-    // 아이템 뷰를 위한 뷰홀더 객체를 생성하여 반환
     @NonNull
     @Override
     public RecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -66,17 +89,31 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public void onBindViewHolder(@NonNull RecyclerAdapter.ViewHolder holder, int position) {
         Data item = mData.get(position);
         holder.onBind(item);
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String itemName = item.getItemName();
+
+
+
+                Intent intent = new Intent(mActivity, DrugInfoActivity.class);
+                intent.putExtra("itemName", itemName);
+
+                mActivity.startActivity(intent);
+            }
+        });
     }
 
-    // 데이터 개수 반환
     @Override
     public int getItemCount() {
         return mData.size();
     }
 
-    // 데이터 리스트 설정
     public void setDataList(ArrayList<Data> list) {
         mData = list;
         notifyDataSetChanged();
     }
+
+
 }
