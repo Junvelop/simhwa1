@@ -1,11 +1,11 @@
 package com.example.myapplication;
 
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,6 +23,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class Dist extends AppCompatActivity {
+
+    private TextView itemNameTextView;
+    private TextView itemNameTextView2;
 
     private String apiUrl = "https://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01?serviceKey=Kz9SWzAXKdBc%2F16leusx9Mi65rCCzbm6DOtk3RTaeoOyzhVEux8V5BRxkum8tSOEbLGmUVTMfnE5eGVJGVpSPg%3D%3D&numOfRows=300&pageNo=1&type=json";
 
@@ -46,23 +49,29 @@ public class Dist extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 setContentView(R.layout.mainlayout);
+                itemNameTextView = findViewById(R.id.itemNameTextView);
+                itemNameTextView2 = findViewById(R.id.itemNameTextView2);
             }
+        });
 
-            public void onItemClick(String itemName, String itemDescription) {
+        adapter.setOnItemClickListener(new RecyclerAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(String itemName) {
+                if (itemNameTextView.getText().toString().isEmpty()) {
+                    itemNameTextView.setText(itemName);
+                } else if (itemNameTextView2.getText().toString().isEmpty()) {
+                    itemNameTextView2.setText(itemName);
+                }
                 Intent intent = new Intent(Dist.this, DrugInfoActivity.class);
                 intent.putExtra("itemName", itemName);
-                intent.putExtra("itemDescription", itemDescription);
                 startActivity(intent);
             }
 
-
+            @Override
+            public void onItemClick(String itemName, String itemDescription) {
+                // This method can be implemented if needed.
+            }
         });
-
-
-
-
-
-
     }
 
     private void fetchDataFromAPI() {
@@ -89,7 +98,6 @@ public class Dist extends AppCompatActivity {
                         }
                         String response = stringBuilder.toString();
 
-                        // 응답 데이터를 파싱하여 필요한 정보 추출
                         JSONObject jsonObject = new JSONObject(response);
                         JSONObject body = jsonObject.getJSONObject("body");
                         JSONArray items = body.getJSONArray("items");
@@ -117,10 +125,8 @@ public class Dist extends AppCompatActivity {
                                         throw new RuntimeException(e);
                                     }
 
-                                    // 약의 품목명과 이미지 URL 출력
                                     Log.d("API Data", "Item Name: " + itemName + ", Image URL: " + itemImage);
 
-                                    // RecyclerAdapter에 데이터 추가
                                     Data newItem = new Data(itemName, itemImage);
                                     adapter.addItem(newItem);
                                 }
@@ -145,6 +151,5 @@ public class Dist extends AppCompatActivity {
                 }
             }
         }).start();
-
     }
 }
