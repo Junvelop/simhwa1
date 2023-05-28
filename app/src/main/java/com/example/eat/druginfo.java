@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.eat;
 
 import android.app.Activity;
 

@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.eat;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.myapplication.R;
 
 import java.util.ArrayList;
 

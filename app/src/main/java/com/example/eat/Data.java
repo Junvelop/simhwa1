@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.eat;
 
 public class Data {
 

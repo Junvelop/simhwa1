@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.eat;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.myapplication.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
