@@ -1,17 +1,21 @@
 package com.example.eat;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,8 +27,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Dist extends AppCompatActivity {
+
+    private FirebaseFirestore firestore;
 
     private TextView itemNameTextView;
     private TextView itemNameTextView2;
@@ -44,36 +52,9 @@ public class Dist extends AppCompatActivity {
         adapter = new RecyclerAdapter(this);
         recyclerView.setAdapter(adapter);
 
+        firestore = FirebaseFirestore.getInstance();
+
         fetchDataFromAPI();
-
-        Button backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setContentView(R.layout.mainlayout);
-                itemNameTextView = findViewById(R.id.itemNameTextView);
-                itemNameTextView2 = findViewById(R.id.itemNameTextView2);
-            }
-        });
-
-        adapter.setOnItemClickListener(new RecyclerAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(String itemName) {
-                if (itemNameTextView.getText().toString().isEmpty()) {
-                    itemNameTextView.setText(itemName);
-                } else if (itemNameTextView2.getText().toString().isEmpty()) {
-                    itemNameTextView2.setText(itemName);
-                }
-                Intent intent = new Intent(Dist.this, DrugInfoActivity.class);
-                intent.putExtra("itemName", itemName);
-                startActivity(intent);
-            }
-
-            @Override
-            public void onItemClick(String itemName, String itemDescription) {
-                // This method can be implemented if needed.
-            }
-        });
     }
 
     private void fetchDataFromAPI() {
@@ -131,7 +112,26 @@ public class Dist extends AppCompatActivity {
 
                                     Data newItem = new Data(itemName, itemImage);
                                     adapter.addItem(newItem);
+
+                                    Map<String, Object> data = new HashMap<>();
+                                    data.put("itemName", itemName);
+
+                                    firestore.collection("items")
+                                            .add(data)
+                                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                                @Override
+                                                public void onSuccess(DocumentReference documentReference) {
+                                                    Log.d("Firestore", "Document added with ID: " + documentReference.getId());
+                                                }
+                                            })
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.e("Firestore", "Error adding document", e);
+                                                }
+                                            });
                                 }
+                                setupButtonClickEvent(); // fetchDataFromAPI() 실행 완료 후에 버튼 클릭 이벤트 처리
                             }
                         });
                     } else {
@@ -153,5 +153,19 @@ public class Dist extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    private void setupButtonClickEvent() {
+        Button backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setContentView(R.layout.mainlayout);
+                itemNameTextView = findViewById(R.id.itemNameTextView);
+                itemNameTextView2 = findViewById(R.id.itemNameTextView2);
+
+                // 클릭 이벤트 처리 코드 작성
+            }
+        });
     }
 }
