@@ -16,6 +16,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,7 +29,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Dist extends AppCompatActivity {
@@ -95,6 +99,7 @@ public class Dist extends AppCompatActivity {
                                     } catch (JSONException e) {
                                         throw new RuntimeException(e);
                                     }
+
                                     String itemName = null;
                                     try {
                                         itemName = item.getString("ITEM_NAME");
@@ -164,7 +169,31 @@ public class Dist extends AppCompatActivity {
                 itemNameTextView = findViewById(R.id.itemNameTextView);
                 itemNameTextView2 = findViewById(R.id.itemNameTextView2);
 
-                // 클릭 이벤트 처리 코드 작성
+                // 데이터베이스에서 선택한 약물 데이터 가져오기
+                firestore.collection("selectedItems")
+                        .get()
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                // 선택한 약물 데이터를 화면에 표시하는 코드 작성
+                                List<Data> selectedItems = new ArrayList<>();
+                                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                                    String itemName = document.getString("itemName");
+                                    String itemImage = document.getString("itemImage");
+                                    Data selectedItem = new Data(itemName, itemImage);
+                                    selectedItems.add(selectedItem);
+                                }
+
+                                // 리사이클러뷰에 선택한 약물 데이터 설정
+                                adapter.setItems(selectedItems);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.e("Firestore", "Error getting selected items", e);
+                            }
+                        });
             }
         });
     }

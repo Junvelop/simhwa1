@@ -13,42 +13,42 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myapplication.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
+    private List<Data> items;
+    private Context context;
 
-    private Dist mActivity;
-
-    public RecyclerAdapter(Dist activity) {
-        mActivity = activity;
-    }
-
+    private FirebaseFirestore firestore;
     private ArrayList<Data> mData = new ArrayList<>();
-    private OnItemClickListener mListener;
 
-    public interface OnItemClickListener {
-        void onItemClick(String itemName);
+    public RecyclerAdapter(Context context) {
+        firestore = FirebaseFirestore.getInstance();
+        this.context = context;
+        this.items = new ArrayList<>();
 
-        void onItemClick(String itemName, String itemDescription);
-    }
-
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        mListener = listener;
     }
 
     public void addItem(Data item) {
         mData.add(item);
-        notifyDataSetChanged(); // 데이터 변경을 어댑터에 알림
+        notifyDataSetChanged();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView textView1;     // 영화이름
-        TextView textView2;     // 누적관객수
-        TextView textView3;     // 영화개봉일
-        ImageView imageView;    // 이미지
+        TextView textView1;
+        TextView textView2;
+        TextView textView3;
+        ImageView imageView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -69,8 +69,35 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
                     .into(imageView);
 
             itemView.setOnClickListener(v -> {
-                if (mListener != null) {
-                    mListener.onItemClick(data.getItemName());
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    Data clickedItem = mData.get(position);
+
+                    // 클릭한 약물 데이터를 데이터베이스에 저장하는 코드 작성
+                    Map<String, Object> dataMap = new HashMap<>();
+                    dataMap.put("itemName", clickedItem.getItemName());
+                    dataMap.put("itemImage", clickedItem.getItemImage());
+
+                    firestore.collection("selectedItems")
+                            .add(dataMap)
+                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                @Override
+                                public void onSuccess(DocumentReference documentReference) {
+                                    String documentId = documentReference.getId();
+                                    // 저장 성공 시 필요한 작업 수행
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    // 저장 실패 시 필요한 작업 수행
+                                }
+                            });
+
+                    // DrugInfoActivity로 이동하는 코드 작성
+                    Intent intent = new Intent(itemView.getContext(), DrugInfoActivity.class);
+                    intent.putExtra("itemName", clickedItem.getItemName());
+                    itemView.getContext().startActivity(intent);
                 }
             });
         }
@@ -78,7 +105,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     @NonNull
     @Override
-    public RecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
@@ -87,23 +114,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Data item = mData.get(position);
         holder.onBind(item);
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String itemName = item.getItemName();
-
-
-
-                Intent intent = new Intent(mActivity, DrugInfoActivity.class);
-                intent.putExtra("itemName", itemName);
-
-                mActivity.startActivity(intent);
-            }
-        });
     }
 
     @Override
@@ -111,10 +124,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         return mData.size();
     }
 
-    public void setDataList(ArrayList<Data> list) {
-        mData = list;
+    public void setItems(List<Data> items) {
+        this.items = items;
         notifyDataSetChanged();
     }
-
-
 }
