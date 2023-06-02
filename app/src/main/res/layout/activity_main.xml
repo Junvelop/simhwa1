@@ -25,9 +25,16 @@
             android:id="@+id/button"
             android:layout_width="100dp"
             android:layout_height="match_parent"
+            android:onClick="mOnClick"
             android:text="search"
-            android:textSize="12sp"
-            android:onClick="mOnClick"/>
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button 3" />
+
 
     </LinearLayout>
 
@@ -40,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textSize="13sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
 
     </ScrollView>
 

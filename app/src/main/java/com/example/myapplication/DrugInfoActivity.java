@@ -22,10 +22,6 @@ public class DrugInfoActivity extends AppCompatActivity {
 
 
 
-
-
-
-
         itemNameTextView = findViewById(R.id.itemNameTextView);
 
 
@@ -57,6 +53,17 @@ public class DrugInfoActivity extends AppCompatActivity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 finish();
+            }
+        });
+
+
+        Button imageButton = (Button) findViewById(R.id.button3);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick (View view){
+                Intent intent = new Intent(getApplicationContext(), subjectivity.class);
+                startActivity(intent);
             }
         });
     }

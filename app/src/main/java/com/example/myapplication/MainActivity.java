@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -29,17 +30,21 @@ public class MainActivity extends Activity {
     public MainActivity() throws UnsupportedEncodingException {
     }
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.mainlayout);
+
+
+
+    }
+
+    protected void mOnClick (Bundle savedInstanceState) {
 
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-
-
 
 
 
@@ -84,6 +89,7 @@ public class MainActivity extends Activity {
         }
 
     }
+
 
 
     String getXmlData() throws UnsupportedEncodingException {
@@ -161,4 +167,8 @@ public class MainActivity extends Activity {
         buffer.append("파싱 끝\n");
 
         return buffer.toString();
-    }}
+    }
+
+
+
+}
