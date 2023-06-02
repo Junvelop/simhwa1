@@ -1,15 +1,23 @@
-package com.example.myapplication;
+package com.example.eat;
 
-
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.myapplication.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,8 +29,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Dist extends AppCompatActivity {
+
+    private FirebaseFirestore firestore;
+
+    private TextView itemNameTextView;
+    private TextView itemNameTextView2;
 
     private String apiUrl = "https://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01?serviceKey=Kz9SWzAXKdBc%2F16leusx9Mi65rCCzbm6DOtk3RTaeoOyzhVEux8V5BRxkum8tSOEbLGmUVTMfnE5eGVJGVpSPg%3D%3D&numOfRows=300&pageNo=1&type=json";
 
@@ -39,30 +56,9 @@ public class Dist extends AppCompatActivity {
         adapter = new RecyclerAdapter(this);
         recyclerView.setAdapter(adapter);
 
+        firestore = FirebaseFirestore.getInstance();
+
         fetchDataFromAPI();
-
-        Button backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setContentView(R.layout.mainlayout);
-            }
-
-            public void onItemClick(String itemName, String itemDescription) {
-                Intent intent = new Intent(Dist.this, DrugInfoActivity.class);
-                intent.putExtra("itemName", itemName);
-                intent.putExtra("itemDescription", itemDescription);
-                startActivity(intent);
-            }
-
-
-        });
-
-
-
-
-
-
     }
 
     private void fetchDataFromAPI() {
@@ -89,7 +85,6 @@ public class Dist extends AppCompatActivity {
                         }
                         String response = stringBuilder.toString();
 
-                        // 응답 데이터를 파싱하여 필요한 정보 추출
                         JSONObject jsonObject = new JSONObject(response);
                         JSONObject body = jsonObject.getJSONObject("body");
                         JSONArray items = body.getJSONArray("items");
@@ -104,6 +99,7 @@ public class Dist extends AppCompatActivity {
                                     } catch (JSONException e) {
                                         throw new RuntimeException(e);
                                     }
+
                                     String itemName = null;
                                     try {
                                         itemName = item.getString("ITEM_NAME");
@@ -117,13 +113,30 @@ public class Dist extends AppCompatActivity {
                                         throw new RuntimeException(e);
                                     }
 
-                                    // 약의 품목명과 이미지 URL 출력
                                     Log.d("API Data", "Item Name: " + itemName + ", Image URL: " + itemImage);
 
-                                    // RecyclerAdapter에 데이터 추가
                                     Data newItem = new Data(itemName, itemImage);
                                     adapter.addItem(newItem);
+
+                                    Map<String, Object> data = new HashMap<>();
+                                    data.put("itemName", itemName);
+
+                                    firestore.collection("items")
+                                            .add(data)
+                                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                                @Override
+                                                public void onSuccess(DocumentReference documentReference) {
+                                                    Log.d("Firestore", "Document added with ID: " + documentReference.getId());
+                                                }
+                                            })
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.e("Firestore", "Error adding document", e);
+                                                }
+                                            });
                                 }
+                                setupButtonClickEvent(); // fetchDataFromAPI() 실행 완료 후에 버튼 클릭 이벤트 처리
                             }
                         });
                     } else {
@@ -145,6 +158,43 @@ public class Dist extends AppCompatActivity {
                 }
             }
         }).start();
+    }
 
+    private void setupButtonClickEvent() {
+        Button backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setContentView(R.layout.mainlayout);
+                itemNameTextView = findViewById(R.id.itemNameTextView);
+                itemNameTextView2 = findViewById(R.id.itemNameTextView2);
+
+                // 데이터베이스에서 선택한 약물 데이터 가져오기
+                firestore.collection("selectedItems")
+                        .get()
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                // 선택한 약물 데이터를 화면에 표시하는 코드 작성
+                                List<Data> selectedItems = new ArrayList<>();
+                                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                                    String itemName = document.getString("itemName");
+                                    String itemImage = document.getString("itemImage");
+                                    Data selectedItem = new Data(itemName, itemImage);
+                                    selectedItems.add(selectedItem);
+                                }
+
+                                // 리사이클러뷰에 선택한 약물 데이터 설정
+                                adapter.setItems(selectedItems);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.e("Firestore", "Error getting selected items", e);
+                            }
+                        });
+            }
+        });
     }
 }

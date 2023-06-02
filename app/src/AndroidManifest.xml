@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.myapplication">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 인터넷 연결 확인 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -18,16 +17,16 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".item_recycler_view"
+            android:name="com.example.eat.item_recycler_view"
             android:exported="false" />
         <activity
-            android:name=".Dist"
+            android:name="com.example.eat.Dist"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.eat.MainActivity"
             android:exported="true" />
         <activity
-            android:name=".DrugInfoActivity"
+            android:name="com.example.eat.DrugInfoActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
